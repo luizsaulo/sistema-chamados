@@ -10,8 +10,7 @@ export default function Dashboard(){
     return(
         <div>
             <Header />
-            <h1>Página Dashboard</h1>
-            <button onClick={ () => signOut() }>LogOut</button>
+            <h1>Página Dashboard</h1>            
         </div>
     )
 }
