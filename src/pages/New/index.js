@@ -1,4 +1,6 @@
 
+import { useState } from 'react';
+
 import Header from '../../components/Header';
 import Title from '../../components/Title';
 
@@ -7,9 +9,22 @@ import { FiPlusCircle } from 'react-icons/fi';
 
 export default function New(){
 
+    const [assunto, setAssunto] = useState('Suporte');
+    const [status, setStatus] = useState('Aberto');
+
     function handleRegister(e){
         e.preventDefault();
         alert('teste')
+    }
+
+    //Chamado quando troca o assunto
+    function handleChangeSelect(e){
+        setAssunto(e.target.value);        
+    }
+
+    //Chamado quando troca o status
+    function handleOptionChange(e){
+        setStatus(e.target.value);
     }
 
     return(
@@ -33,7 +48,7 @@ export default function New(){
                         </select>
 
                         <label>Assunto</label>
-                        <select>
+                        <select value={assunto} onChange={handleChangeSelect}>
                             <option value='Suporte'>Suporte</option>
                             <option value='Visita Tecnica'>Visita Técnica</option>
                             <option value='Financeiro'>Financeiro</option>
@@ -45,6 +60,8 @@ export default function New(){
                             type='radio'
                             name='radio'
                             value='Aberto'
+                            onChange={handleOptionChange}
+                            checked={ status === 'Aberto' }
                             />
                             <span>Em aberto</span>
 
@@ -52,6 +69,8 @@ export default function New(){
                             type='radio'
                             name='radio'
                             value='Progresso'
+                            onChange={handleOptionChange}
+                            checked={ status === 'Progresso' }
                             />
                             <span>Em progresso</span>
 
@@ -59,6 +78,8 @@ export default function New(){
                             type='radio'
                             name='radio'
                             value='Atendido'
+                            onChange={handleOptionChange}
+                            checked={ status === 'Atendido' }
                             />
                             <span>Atendido</span>
                         </div>
