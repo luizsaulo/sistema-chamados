@@ -1,16 +1,63 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useContext } from 'react';
+
+import firebase from '../../services/firebaseConnection';
 
 import Header from '../../components/Header';
 import Title from '../../components/Title';
+import { AuthContext } from '../../contexts/auth';
 
 import './new.css';
 import { FiPlusCircle } from 'react-icons/fi';
 
 export default function New(){
 
+    const [loadCustomers, setLoadCustomers] = useState(true);
+    const [customers, setCustomers] = useState([]);
+    const [customerSelected, setCustomerSelected] = useState(0);
+
     const [assunto, setAssunto] = useState('Suporte');
     const [status, setStatus] = useState('Aberto');
+    const [complemento, setComplemento] = useState('');
+
+    const{ user } = useContext(AuthContext);
+
+    useEffect(()=> {
+        async function loadCustomers(){
+            await firebase.firestore().collection('customers')
+            .get()
+            .then((snapshot)=>{
+                let lista = [];
+
+                snapshot.forEach((doc) => {
+                    lista.push({
+                        id: doc.id,
+                        nomeFantasia: doc.data().nomeFantasia
+                    })
+                })
+
+                if(lista.length === 0){
+                    console.log('Nenhuma empresa encontrada');
+                    setCustomers([ { id: '1', nomeFantasia: '' } ]);
+                    setLoadCustomers(false);
+                    return;
+                }
+
+                setCustomers(lista);
+                setLoadCustomers(false);
+
+            })
+            .catch((error)=>{
+                console.log('Deu algum erro!', error);
+                setLoadCustomers(false);
+                setCustomers([ {id:'1', nomeFantasia: ''} ])
+            })
+
+        }
+
+        loadCustomers();
+
+    }, []);
 
     function handleRegister(e){
         e.preventDefault();
@@ -27,6 +74,13 @@ export default function New(){
         setStatus(e.target.value);
     }
 
+    //Chamado quando troca de cliente
+    function handleChangeCustomers(e){
+        //console.log('Index do cliente selecionado: ', e.target.value);
+        //console.log('Cliente selecionado ', customers[e.target.value]);
+        setCustomerSelected(e.target.value);
+    }
+
     return(
         <div>
             <Header />
@@ -41,11 +95,21 @@ export default function New(){
                     <form className='form-profile' onSubmit={handleRegister} >
 
                         <lable>Cliente</lable>
-                        <select>
-                            <option key={1} value={1}>
-                                Scuderia Ferrari
-                            </option>
-                        </select>
+
+                        {loadCustomers ? (
+                            <input type='text' disabled={true} value='Carregando clientes..' />
+                        ) : (
+                            <select value={customerSelected} onChange={handleChangeCustomers} >
+                            {customers.map((item, index) => {
+                                return(
+                                    <option key={item.id} value={index} >
+                                        {item.nomeFantasia}
+                                    </option>
+                                )
+                            })}
+                            </select>
+                        )}
+                        
 
                         <label>Assunto</label>
                         <select value={assunto} onChange={handleChangeSelect}>
@@ -88,6 +152,8 @@ export default function New(){
                         <textarea
                             type='text'
                             placeholder='Descreva seu problema (opcional).'
+                            value={complemento}
+                            onChange={ (e) => setComplemento(e.target.value) }
                         />
 
                         <button type='submit'>Registrar</button>
