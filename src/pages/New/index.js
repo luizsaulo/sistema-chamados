@@ -2,6 +2,7 @@
 import { useState, useEffect, useContext } from 'react';
 
 import firebase from '../../services/firebaseConnection';
+import { useHistory, useParams } from 'react-router-dom';
 
 import Header from '../../components/Header';
 import Title from '../../components/Title';
@@ -12,6 +13,8 @@ import './new.css';
 import { FiPlusCircle } from 'react-icons/fi';
 
 export default function New(){
+    const { id } = useParams();
+    const history = useHistory();
 
     const [loadCustomers, setLoadCustomers] = useState(true);
     const [customers, setCustomers] = useState([]);
@@ -20,6 +23,8 @@ export default function New(){
     const [assunto, setAssunto] = useState('Suporte');
     const [status, setStatus] = useState('Aberto');
     const [complemento, setComplemento] = useState('');
+
+    const [idCustomer, setIdCustomer] = useState(false);
 
     const{ user } = useContext(AuthContext);
 
@@ -47,6 +52,10 @@ export default function New(){
                 setCustomers(lista);
                 setLoadCustomers(false);
 
+                if(id){
+                    loadId(lista);
+                }
+
             })
             .catch((error)=>{
                 console.log('Deu algum erro!', error);
@@ -59,6 +68,20 @@ export default function New(){
         loadCustomers();
 
     }, []);
+
+    async function loadId(lista){
+        await firebase.firestore().collection('chamados').doc(id)
+        .get()
+        .then((snapshot) => {
+            setAssunto(snapshot.data().assunto);
+            setStatus(snapshot.data().status);
+            setComplemento(snapshot.data().complemento)
+
+            let index = lista.findIndex(item => item.id === snapshot.data().clienteId );
+            setCustomerSelected(index);
+
+        })
+    }
 
     async function handleRegister(e){
         e.preventDefault();
